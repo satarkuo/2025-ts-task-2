@@ -13,154 +13,141 @@ TypeScript 練習題目 - 商品彈窗組件
 -->
 
 <script setup lang="ts">
-// TODO: 匯入 API 函式
-// 提示：從 @/api/products 匯入 apiCreateProduct, apiEditProduct
-import {} from '@/api/products'
-import { useImageUpload } from '@/composable/useImageUpload'
-import { useProductForm } from '@/composable/useProductData'
+  // TODO: 匯入 API 函式
+  // 提示：從 @/api/products 匯入 apiCreateProduct, apiEditProduct
+  import { apiCreateProduct, apiEditProduct } from '@/api/products';
+  import { useImageUpload } from '@/composable/useImageUpload';
+  import { useProductForm } from '@/composable/useProductData';
 
-// TODO: 匯入型別定義
-// 提示：從 @/types/product 匯入 ProductData
-import type {} from '@/types/product'
-import { Modal } from 'bootstrap'
+  // TODO: 匯入型別定義
+  // 提示：從 @/types/product 匯入 ProductData
+  import type { ProductData } from '@/types/product';
+  import { Modal } from 'bootstrap';
 
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+  import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 
-// TODO: 定義 Props 介面
-// 提示：ProductModalProps 應該包含 product 屬性，型別是 ProductData
-interface ProductModalProps {
-  // 在這裡定義 props 型別，將 unknown 替換為正確的型別
-  product: unknown
-}
-
-// TODO: 定義 props
-// 提示：使用 defineProps<ProductModalProps>()
-const { product } = defineProps()
-
-const emit = defineEmits(['get-products'])
-
-// TODO: 為模板引用加上型別註解
-// 提示：使用 useTemplateRef<HTMLElement>()
-const modalRef = useTemplateRef('modalRef')
-
-// TODO: 為 modal 變數加上型別註解
-// 提示：型別是 Modal | null
-let modal = null
-
-onMounted(() => {
-  if (modalRef.value) {
-    modal = new Modal(modalRef.value)
+  // TODO: 定義 Props 介面
+  // 提示：ProductModalProps 應該包含 product 屬性，型別是 ProductData
+  interface ProductModalProps {
+    // 在這裡定義 props 型別，將 unknown 替換為正確的型別
+    product: ProductData;
   }
-})
 
-onUnmounted(() => {
-  if (modal) {
-    modal.dispose()
-  }
-})
+  // TODO: 定義 props
+  // 提示：使用 defineProps<ProductModalProps>()
+  const { product } = defineProps<ProductModalProps>();
 
-const openModal = () => {
-  if (modal) {
-    modal.show()
-  }
-}
+  const emit = defineEmits(['get-products']);
 
-const closeModal = () => {
-  if (modal) {
-    modal.hide()
-  }
-}
+  // TODO: 為模板引用加上型別註解
+  // 提示：使用 useTemplateRef<HTMLElement>()
+  const modalRef = useTemplateRef<HTMLElement>('modalRef');
 
-const { form, formTitle, loadProduct } = useProductForm()
+  // TODO: 為 modal 變數加上型別註解
+  // 提示：型別是 Modal | null
+  let modal: Modal | null = null;
 
-const {
-  uploadedImages,
-  imageUrlInput,
-  fileToUpload,
-  fileNameDisplay,
-  isUploading,
-  addImageUrl,
-  triggerUpload,
-  handleFileChange,
-  deleteImage,
-  resetImages,
-} = useImageUpload()
-
-watch(
-  () => product,
-  (newProduct) => {
-    if (newProduct.id) {
-      loadProduct(newProduct)
-      resetImages([newProduct.imageUrl, ...newProduct.imagesUrl])
-    } else {
-      loadProduct(null)
-      resetImages([])
+  onMounted(() => {
+    if (modalRef.value) {
+      modal = new Modal(modalRef.value);
     }
-  },
-  { immediate: true, deep: true },
-)
+  });
 
-const isEditMode = computed(() => Boolean(product.id))
-
-const isLoading = ref(false)
-
-const saveProduct = async () => {
-  const [imageUrl, ...imagesUrl] = uploadedImages.value
-
-  const { id, ...productData } = form.value
-
-  productData.imageUrl = imageUrl
-  productData.imagesUrl = imagesUrl
-
-  const data = {
-    ...productData,
-    imagesUrl: productData.imagesUrl ? productData.imagesUrl : [''],
-  }
-
-  isLoading.value = true
-
-  try {
-    if (isEditMode.value && id) {
-      await apiEditProduct({ data, id })
-    } else {
-      await apiCreateProduct(data)
+  onUnmounted(() => {
+    if (modal) {
+      modal.dispose();
     }
-    resetImages([])
-    closeModal()
-  } catch (error) {
-    alert('新增/編輯產品失敗')
-  } finally {
-    isLoading.value = false
-    emit('get-products')
-  }
-}
+  });
 
-defineExpose({
-  openModal,
-  closeModal,
-})
+  const openModal = () => {
+    if (modal) {
+      modal.show();
+    }
+  };
+
+  const closeModal = () => {
+    if (modal) {
+      modal.hide();
+    }
+  };
+
+  const { form, formTitle, loadProduct } = useProductForm();
+
+  const {
+    uploadedImages,
+    imageUrlInput,
+    fileToUpload,
+    fileNameDisplay,
+    isUploading,
+    addImageUrl,
+    triggerUpload,
+    handleFileChange,
+    deleteImage,
+    resetImages,
+  } = useImageUpload();
+
+  watch(
+    () => product,
+    newProduct => {
+      if (newProduct.id) {
+        loadProduct(newProduct);
+        resetImages([newProduct.imageUrl, ...newProduct.imagesUrl]);
+      } else {
+        loadProduct(null);
+        resetImages([]);
+      }
+    },
+    { immediate: true, deep: true },
+  );
+
+  const isEditMode = computed(() => Boolean(product.id));
+
+  const isLoading = ref(false);
+
+  const saveProduct = async () => {
+    const [imageUrl, ...imagesUrl] = uploadedImages.value;
+
+    const { id, ...productData } = form.value;
+
+    productData.imageUrl = imageUrl;
+    productData.imagesUrl = imagesUrl;
+
+    const data = {
+      ...productData,
+      imagesUrl: productData.imagesUrl ? productData.imagesUrl : [''],
+    };
+
+    isLoading.value = true;
+
+    try {
+      if (isEditMode.value && id) {
+        await apiEditProduct({ data, id });
+      } else {
+        await apiCreateProduct(data);
+      }
+      resetImages([]);
+      closeModal();
+    } catch (error) {
+      alert('新增/編輯產品失敗');
+    } finally {
+      isLoading.value = false;
+      emit('get-products');
+    }
+  };
+
+  defineExpose({
+    openModal,
+    closeModal,
+  });
 </script>
 
 <template>
-  <div
-    ref="modalRef"
-    class="modal fade"
-    id="addNewProductModal"
-    tabindex="-1"
-    aria-labelledby="addNewProductModalLabel"
-    aria-hidden="true"
-  >
+  <div ref="modalRef" class="modal fade" id="addNewProductModal" tabindex="-1" aria-labelledby="addNewProductModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content rounded-lg">
         <div class="modal-header">
           <h5 class="modal-title" id="addNewProductModalLabel">{{ formTitle }}</h5>
-          <button
-            @click="closeModal"
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button @click="closeModal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="row">
@@ -168,41 +155,22 @@ defineExpose({
               <form>
                 <div class="mb-3">
                   <label for="productName" class="form-label">商品名稱</label>
-                  <input
-                    v-model="form.title"
-                    type="text"
-                    class="form-control rounded-lg"
-                    id="productName"
-                  />
+                  <input v-model="form.title" type="text" class="form-control rounded-lg" id="productName" />
                 </div>
                 <div class="row">
                   <div class="col-6 mb-3">
                     <label for="productOriginalPrice" class="form-label">原價</label>
-                    <input
-                      v-model="form.origin_price"
-                      type="number"
-                      class="form-control rounded-lg"
-                      id="productOriginalPrice"
-                    />
+                    <input v-model="form.origin_price" type="number" class="form-control rounded-lg" id="productOriginalPrice" />
                   </div>
                   <div class="col-6 mb-3">
                     <label for="productPrice" class="form-label">售價</label>
-                    <input
-                      v-model="form.price"
-                      type="number"
-                      class="form-control rounded-lg"
-                      id="productPrice"
-                    />
+                    <input v-model="form.price" type="number" class="form-control rounded-lg" id="productPrice" />
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-6 mb-3">
                     <label for="productCategory" class="form-label">分類</label>
-                    <input
-                      v-model="form.category"
-                      class="form-control rounded-lg"
-                      id="productCategory"
-                    />
+                    <input v-model="form.category" class="form-control rounded-lg" id="productCategory" />
                   </div>
                   <div class="col-6 mb-3">
                     <label for="productUnit" class="form-label">單位</label>
@@ -211,21 +179,11 @@ defineExpose({
                 </div>
                 <div class="mb-3">
                   <label for="productDescription" class="form-label">商品內容</label>
-                  <textarea
-                    v-model="form.content"
-                    class="form-control rounded-lg"
-                    id="productDescription"
-                    rows="4"
-                  ></textarea>
+                  <textarea v-model="form.content" class="form-control rounded-lg" id="productDescription" rows="4"></textarea>
                 </div>
                 <div class="mb-3">
                   <label for="productDescription" class="form-label">商品描述</label>
-                  <textarea
-                    v-model="form.description"
-                    class="form-control rounded-lg"
-                    id="productDescription"
-                    rows="4"
-                  ></textarea>
+                  <textarea v-model="form.description" class="form-control rounded-lg" id="productDescription" rows="4"></textarea>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
                   <label class="form-label me-3 mb-0">啟用</label>
@@ -247,12 +205,7 @@ defineExpose({
                 <label class="form-label">上傳圖片 (最多 4 張)</label>
 
                 <div class="input-group mb-2">
-                  <input
-                    type="url"
-                    class="form-control rounded-lg"
-                    placeholder="輸入圖片連結"
-                    v-model="imageUrlInput"
-                  />
+                  <input type="url" class="form-control rounded-lg" placeholder="輸入圖片連結" v-model="imageUrlInput" />
                   <button
                     class="btn btn-outline-secondary rounded-lg ms-2"
                     type="button"
@@ -279,12 +232,7 @@ defineExpose({
                     class="btn btn-outline-secondary rounded-lg ms-2"
                     type="button"
                   >
-                    <span
-                      v-if="isUploading"
-                      class="spinner-border spinner-border-sm me-1"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
+                    <span v-if="isUploading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                     {{ isUploading ? '上傳中...' : '上傳圖片' }}
                   </button>
                 </div>
@@ -308,11 +256,7 @@ defineExpose({
                     </button>
                   </div>
 
-                  <div
-                    v-for="i in 4 - uploadedImages.length"
-                    :key="'placeholder-' + i"
-                    class="image-preview-thumbnail-container"
-                  >
+                  <div v-for="i in 4 - uploadedImages.length" :key="'placeholder-' + i" class="image-preview-thumbnail-container">
                     <img
                       :src="`https://placehold.co/100x100/e9ecef/adb5bd?text=Image+${uploadedImages.length + i}`"
                       class="image-preview-thumbnail"
@@ -324,17 +268,8 @@ defineExpose({
           </div>
         </div>
         <div class="modal-footer">
-          <button @click="closeModal" type="button" class="btn btn-outline-secondary rounded-lg">
-            取消
-          </button>
-          <button
-            @click="saveProduct"
-            :disabled="isLoading"
-            type="button"
-            class="btn btn-dark rounded-lg"
-          >
-            儲存
-          </button>
+          <button @click="closeModal" type="button" class="btn btn-outline-secondary rounded-lg">取消</button>
+          <button @click="saveProduct" :disabled="isLoading" type="button" class="btn btn-dark rounded-lg">儲存</button>
         </div>
       </div>
     </div>

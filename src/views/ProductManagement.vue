@@ -13,105 +13,105 @@ TypeScript 練習題目 - 商品管理頁面
 -->
 
 <script setup lang="ts">
-// TODO: 匯入 API 函式
-// 提示：從 @/api/products 匯入 apiDeleteProduct, apiGetProducts
-import {} from '@/api/products'
+  // TODO: 匯入 API 函式
+  // 提示：從 @/api/products 匯入 apiDeleteProduct, apiGetProducts
+  import { apiDeleteProduct, apiGetProducts } from '@/api/products';
 
-import DeleteModal from '@/components/DeleteModal.vue'
-import ProductModal from '@/components/ProductModal.vue'
+  import DeleteModal from '@/components/DeleteModal.vue';
+  import ProductModal from '@/components/ProductModal.vue';
 
-// TODO: 匯入型別定義
-// 提示：從 @/types/product 匯入 Pagination, ProductData
-import type {} from '@/types/product'
-import { onMounted, ref, useTemplateRef } from 'vue'
+  // TODO: 匯入型別定義
+  // 提示：從 @/types/product 匯入 Pagination, ProductData
+  import type { Pagination, ProductData } from '@/types/product';
+  import { onMounted, ref, useTemplateRef } from 'vue';
 
-// TODO: 為模板引用加上型別註解
-// 提示：使用 useTemplateRef<InstanceType<typeof ProductModal>>()
-const productModalRef = useTemplateRef('productModalRef')
-const deleteModalRef = useTemplateRef('deleteModalRef')
+  // TODO: 為模板引用加上型別註解
+  // 提示：使用 useTemplateRef<InstanceType<typeof ProductModal>>()
+  const productModalRef = useTemplateRef<InstanceType<typeof ProductModal>>('productModalRef');
+  const deleteModalRef = useTemplateRef<InstanceType<typeof DeleteModal>>('deleteModalRef');
 
-// TODO: 為 currentPage 加上型別註解
-// 提示：使用 ref<string>()
-const currentPage = ref('1')
+  // TODO: 為 currentPage 加上型別註解
+  // 提示：使用 ref<string>()
+  const currentPage = ref<string>('1');
 
-// TODO: 為 products 加上型別註解
-// 提示：使用 ref<ProductData[]>()
-const products = ref([])
+  // TODO: 為 products 加上型別註解
+  // 提示：使用 ref<ProductData[]>()
+  const products = ref<ProductData[]>([]);
 
-// TODO: 為 pagination 加上型別註解
-// 提示：使用 ref<Pagination>()
-const pagination = ref({
-  total_pages: 0,
-  current_page: 0,
-  has_pre: false,
-  has_next: false,
-  category: '',
-})
+  // TODO: 為 pagination 加上型別註解
+  // 提示：使用 ref<Pagination>()
+  const pagination = ref<Pagination>({
+    total_pages: 0,
+    current_page: 0,
+    has_pre: false,
+    has_next: false,
+    category: '',
+  });
 
-const getProducts = async () => {
-  try {
-    const res = await apiGetProducts({
-      page: currentPage.value,
-    })
+  const getProducts = async () => {
+    try {
+      const res = await apiGetProducts({
+        page: currentPage.value,
+      });
 
-    products.value = res.data.products
-    pagination.value = res.data.pagination
-  } catch (error) {
-    alert('取得產品列表失敗')
-  }
-}
-onMounted(() => {
-  getProducts()
-})
+      products.value = res.data.products;
+      pagination.value = res.data.pagination;
+    } catch (error) {
+      alert('取得產品列表失敗');
+    }
+  };
+  onMounted(() => {
+    getProducts();
+  });
 
-// TODO: 為 getInitialProductData 函式加上型別註解
-// 提示：這個函式不接受參數，回傳 ProductData 型別
-const getInitialProductData = () => ({
-  id: '',
-  title: '',
-  origin_price: 0,
-  price: 0,
-  category: '',
-  unit: '',
-  num: 0,
-  content: '',
-  description: '',
-  is_enabled: 1,
-  imageUrl: '',
-  imagesUrl: [''],
-})
+  // TODO: 為 getInitialProductData 函式加上型別註解
+  // 提示：這個函式不接受參數，回傳 ProductData 型別
+  const getInitialProductData = (): ProductData => ({
+    id: '',
+    title: '',
+    origin_price: 0,
+    price: 0,
+    category: '',
+    unit: '',
+    num: 0,
+    content: '',
+    description: '',
+    is_enabled: 1,
+    imageUrl: '',
+    imagesUrl: [''],
+  });
 
-// TODO: 為 tempProduct 加上型別註解
-// 提示：使用 ref<ProductData>()
-const tempProduct = ref(getInitialProductData())
+  // TODO: 為 tempProduct 加上型別註解
+  // 提示：使用 ref<ProductData>()
+  const tempProduct = ref<ProductData>(getInitialProductData());
 
-// TODO: 為 openModal 函式加上型別註解
-// 提示：參數 product 的型別是 ProductData | null，預設值是 null，沒有回傳值
-const openModal = (product = null) => {
-  if (product) {
-    tempProduct.value = { ...product, imagesUrl: product.imagesUrl ? [...product.imagesUrl] : [''] }
-  }
+  // TODO: 為 openModal 函式加上型別註解
+  // 提示：參數 product 的型別是 ProductData | null，預設值是 null，沒有回傳值
+  const openModal = (product: ProductData | null = null): void => {
+    if (product) {
+      tempProduct.value = { ...product, imagesUrl: product.imagesUrl ? [...product.imagesUrl] : [''] };
+    }
 
-  productModalRef.value?.openModal()
-}
+    productModalRef.value?.openModal();
+  };
 
-// TODO: 為 openDeleteModal 函式加上型別註解
-// 提示：參數 productId 是 string 型別，沒有回傳值
-const openDeleteModal = (productId) => {
-  deleteModalRef.value?.openModal(() => handleDeleteProduct(productId))
-}
+  // TODO: 為 openDeleteModal 函式加上型別註解
+  // 提示：參數 productId 是 string 型別，沒有回傳值
+  const openDeleteModal = (productId: string): void => {
+    deleteModalRef.value?.openModal(() => handleDeleteProduct(productId));
+  };
 
-// TODO: 為 handleDeleteProduct 函式加上型別註解
-// 提示：這是一個 async 函式，參數 productId 是 string 型別，回傳 Promise<void>
-const handleDeleteProduct = async (productId) => {
-  try {
-    await apiDeleteProduct(productId)
-  } catch (error) {
-    alert('刪除商品失敗')
-  } finally {
-    getProducts()
-  }
-}
+  // TODO: 為 handleDeleteProduct 函式加上型別註解
+  // 提示：這是一個 async 函式，參數 productId 是 string 型別，回傳 Promise<void>
+  const handleDeleteProduct = async (productId: string): Promise<void> => {
+    try {
+      await apiDeleteProduct(productId);
+    } catch (error) {
+      alert('刪除商品失敗');
+    } finally {
+      getProducts();
+    }
+  };
 </script>
 
 <template>
@@ -141,9 +141,7 @@ const handleDeleteProduct = async (productId) => {
               <td>{{ product.origin_price }}</td>
               <td>{{ product.price }}</td>
               <td class="text-center">
-                <div
-                  class="form-check form-switch d-flex justify-content-center align-items-center"
-                >
+                <div class="form-check form-switch d-flex justify-content-center align-items-center">
                   <input
                     readonly
                     class="form-check-input"
@@ -155,20 +153,8 @@ const handleDeleteProduct = async (productId) => {
                 </div>
               </td>
               <td class="text-nowrap">
-                <button
-                  @click="openModal(product)"
-                  type="button"
-                  class="btn btn-sm btn-outline-dark rounded-lg me-2"
-                >
-                  編輯
-                </button>
-                <button
-                  @click="openDeleteModal(product.id)"
-                  type="button"
-                  class="btn btn-sm btn-outline-danger rounded-lg"
-                >
-                  刪除
-                </button>
+                <button @click="openModal(product)" type="button" class="btn btn-sm btn-outline-dark rounded-lg me-2">編輯</button>
+                <button @click="openDeleteModal(product.id)" type="button" class="btn btn-sm btn-outline-danger rounded-lg">刪除</button>
               </td>
             </tr>
           </tbody>
